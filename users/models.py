@@ -5,4 +5,5 @@ class CustomUser(AbstractUser):
     bio = models.TextField(blank=True)
     is_banned = models.BooleanField(default=False)
 
-
+    def __str__(self):
+        return self.username
