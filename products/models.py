@@ -5,7 +5,7 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
     stock = models.PositiveIntegerField()
-    discount_percentage = models.FloatField(default=0.0)
+    discount_percentage = models.DecimalField(max_digits=2, decimal_places=0)
 
     def is_available(self):
         return self.stock > 0

@@ -11,6 +11,7 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
     if created:
         Token.objects.get_or_create(user=instance)
 
+
 @receiver(post_save, sender=CustomUser)
 def assign_default_group(sender, instance, created, **kwargs):
     if created:
