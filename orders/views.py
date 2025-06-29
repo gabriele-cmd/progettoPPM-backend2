@@ -37,18 +37,22 @@ class CartItemManageView(APIView):
         """
         cart = self.get_cart()
         serializer = CartItemSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        product = serializer.validated_data['product']
-        quantity = serializer.validated_data['quantity']
 
-        cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-        if not created:
-            cart_item.quantity += quantity
-        else:
-            cart_item.quantity = quantity
-        cart_item.save()
+        if serializer.is_valid():
+            product = serializer.validated_data.get('product')
+            quantity = serializer.validated_data.get('quantity', 1)
 
-        return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
+            cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+            if not created:
+                cart_item.quantity += quantity
+            else:
+                cart_item.quantity = quantity
+            cart_item.save()
+
+            return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
+
+        print("Errore:", serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request, item_id):
         """

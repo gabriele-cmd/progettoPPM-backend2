@@ -4,9 +4,7 @@ from products.models import Product
 from products.serializers import ProductSerializer
 
 class CartItemSerializer(serializers.ModelSerializer):
-    # Scrittura: solo ID prodotto
     product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
-    # Lettura: dettagli prodotto nested
     product_detail = ProductSerializer(source='product', read_only=True)
 
     class Meta:
