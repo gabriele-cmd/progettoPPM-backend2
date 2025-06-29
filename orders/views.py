@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+
+from products.models import Product
 from .permissions import IsModerator
 
 from .models import Cart, CartItem, Order, OrderItem
@@ -45,23 +47,16 @@ class CartItemManageView(APIView):
         serializer = CartItemSerializer(data=data)
 
         if serializer.is_valid():
-            product = serializer.validated_data.get('product')
+            product_id = serializer.validated_data.get('product_id')
+            product = get_object_or_404(Product, id=product_id)
             quantity = serializer.validated_data.get('quantity')
 
             try:
                 cart_item = CartItem.objects.get(cart=cart, product=product)
                 cart_item.quantity += quantity
-                created = False
             except CartItem.DoesNotExist:
                 cart_item = CartItem(cart=cart, product=product, quantity=quantity)
-                created = True
 
-            cart_item.save()
-
-            if not created:
-                cart_item.quantity += quantity
-            else:
-                cart_item.quantity = quantity
             cart_item.save()
 
             return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
@@ -88,6 +83,25 @@ class CartItemManageView(APIView):
         cart_item = get_object_or_404(CartItem, id=item_id, cart=cart)
         cart_item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def patch(self, request, item_id):
+        user = request.user
+        cart = get_object_or_404(Cart, user=user)
+        item = get_object_or_404(CartItem, id=item_id, cart=cart)
+
+        data = request.data
+        quantity_delta = data.get('quantity')
+
+        if quantity_delta is not None:
+            item.quantity += quantity_delta
+            if item.quantity <= 0:
+                item.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            item.save()
+            return Response(CartItemSerializer(item).data)
+
+        return Response({'error': 'quantity is required'}, status=400)
+
 
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated]

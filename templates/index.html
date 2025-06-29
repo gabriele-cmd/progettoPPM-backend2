@@ -92,13 +92,35 @@
           'Authorization': 'Token ' + token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ product: productId, quantity: 1 })
+        body: JSON.stringify({ product_id: productId, quantity: 1 })
       })
       .then(res => {
-        if (res.ok) alert('Aggiunto al carrello!');
+        if (res.ok) {
+          alert('Aggiunto al carrello!');
+          viewCart();
+        }
         else alert('Errore durante l\'aggiunta al carrello.');
       });
     }
+
+    function removeFromCart(cartItemId) {
+      fetch(`${apiBase}/orders/cart/items/${cartItemId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': 'Token ' + token,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ quantity: -1 })  // oppure { action: 'decrement' } se preferisci
+      })
+      .then(res => {
+        if (res.ok) {
+          viewCart();  // aggiorna il carrello
+        } else {
+          alert("Errore durante la rimozione.");
+        }
+      });
+    }
+
 
     function viewCart() {
       if (!token) {
@@ -114,14 +136,20 @@
       .then(cart => {
         const container = document.getElementById('cart-items');
         container.innerHTML = '';
+
         cart.items.forEach(item => {
           const div = document.createElement('div');
-          div.innerText = `${item.product.name} - x${item.quantity}`;
+          div.innerHTML = `
+              ${item.product.name} - x${item.quantity}
+              <button onclick="removeFromCart(${item.id})">-</button>
+          `;
           container.appendChild(div);
         });
+
         document.getElementById('cart-modal').classList.remove('hidden');
       });
     }
+
 
     function closeCart() {
       document.getElementById('cart-modal').classList.add('hidden');
