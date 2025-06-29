@@ -36,13 +36,28 @@ class CartItemManageView(APIView):
         Aggiunge un prodotto al carrello o incrementa la quantità se già presente.
         """
         cart = self.get_cart()
-        serializer = CartItemSerializer(data=request.data)
+        data = request.data.copy()
+
+        # Fallback su quantity
+        if 'quantity' not in data or not str(data['quantity']).isdigit():
+            data['quantity'] = 1
+
+        serializer = CartItemSerializer(data=data)
 
         if serializer.is_valid():
             product = serializer.validated_data.get('product')
-            quantity = serializer.validated_data.get('quantity', 1)
+            quantity = serializer.validated_data.get('quantity')
 
-            cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+            try:
+                cart_item = CartItem.objects.get(cart=cart, product=product)
+                cart_item.quantity += quantity
+                created = False
+            except CartItem.DoesNotExist:
+                cart_item = CartItem(cart=cart, product=product, quantity=quantity)
+                created = True
+
+            cart_item.save()
+
             if not created:
                 cart_item.quantity += quantity
             else:
