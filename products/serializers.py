@@ -3,6 +3,7 @@ from .models import Product
 
 class ProductSerializer(serializers.ModelSerializer):
     final_price = serializers.SerializerMethodField()
+    discount_percentage = serializers.IntegerField()
 
     class Meta:
         model = Product

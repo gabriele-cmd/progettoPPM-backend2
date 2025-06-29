@@ -51,6 +51,16 @@ class CartItemManageView(APIView):
             product = get_object_or_404(Product, id=product_id)
             quantity = serializer.validated_data.get('quantity')
 
+            existing_quantity = CartItem.objects.filter(cart=cart, product=product).first()
+            total_requested = quantity
+            if existing_quantity:
+                total_requested += existing_quantity.quantity
+
+            if total_requested > product.stock:
+                return Response({
+                    "detail": f"Disponibilità insufficiente: solo {product.stock} pezzi in magazzino."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
             try:
                 cart_item = CartItem.objects.get(cart=cart, product=product)
                 cart_item.quantity += quantity
@@ -58,7 +68,6 @@ class CartItemManageView(APIView):
                 cart_item = CartItem(cart=cart, product=product, quantity=quantity)
 
             cart_item.save()
-
             return Response(CartItemSerializer(cart_item).data, status=status.HTTP_201_CREATED)
 
         print("Errore:", serializer.errors)

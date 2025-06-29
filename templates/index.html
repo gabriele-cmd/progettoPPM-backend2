@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Mini Shop</title>
+  <title>Vinyl Shop</title>
   <style>
     body { font-family: Arial; margin: 20px; }
     #header { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px; }
@@ -13,7 +13,9 @@
 <body>
 
   <div id="header">
-    <button onclick="showLogin()">Login</button>
+    <div id="user-info" style="margin-right: auto;"></div>
+    <button id="login-btn" onclick="showLogin()">Login</button>
+    <button id="logout-btn" class="hidden" onclick="logout()">Logout</button>
     <button onclick="viewCart()">Carrello</button>
   </div>
 
@@ -30,6 +32,7 @@
   <div id="cart-modal" class="hidden">
     <h2>Carrello</h2>
     <div id="cart-items"></div>
+    <div id="cart-total" style="font-weight: bold; margin-top: 10px;"></div>
     <button onclick="checkout()">Checkout</button>
     <button onclick="closeCart()">Chiudi</button>
   </div>
@@ -42,22 +45,76 @@
       document.getElementById('login-modal').classList.remove('hidden');
     }
 
+    function updateHeaderUI() {
+      const loginBtn = document.getElementById('login-btn');
+      const logoutBtn = document.getElementById('logout-btn');
+      const userInfo = document.getElementById('user-info');
+
+      if (token) {
+        // Recupera info utente
+        fetch(`${apiBase}/users/me/`, {
+          headers: { 'Authorization': 'Token ' + token }
+        })
+        .then(res => {
+          if (!res.ok) throw new Error('Token non valido');
+          return res.json();
+        })
+        .then(user => {
+          loginBtn.classList.add('hidden');
+          logoutBtn.classList.remove('hidden');
+          userInfo.innerHTML = `<strong>Benvenuto, ${user.username}</strong>`;
+        })
+        .catch(() => {
+          // Token invalido
+          token = null;
+          localStorage.removeItem('token');
+          loginBtn.classList.remove('hidden');
+          logoutBtn.classList.add('hidden');
+          userInfo.innerHTML = '';
+        });
+      } else {
+        loginBtn.classList.remove('hidden');
+        logoutBtn.classList.add('hidden');
+        userInfo.innerHTML = '';
+      }
+    }
+
     function login() {
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
-
       fetch(`${apiBase}/users/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })
       })
-      .then(res => res.json())
-      .then(data => {
-        token = data.token;
-        localStorage.setItem('token', token);
-        document.getElementById('login-modal').classList.add('hidden');
-        loadProducts();
+      .then(res => {
+        return res.json().then(data => ({ status: res.status, data }));
+      })
+      .then(({ status, data }) => {
+        if (status === 200 && data.token) {
+          token = data.token;
+          localStorage.setItem('token', token);
+          document.getElementById('login-modal').classList.add('hidden');
+          updateHeaderUI();
+          loadProducts();
+        } else if (status === 403 && data.detail) {
+          alert(data.detail);
+        } else {
+          alert("Credenziali errate o utente inesistente.");
+        }
       });
+    }
+
+    function logout() {
+      if (!token) {
+        alert("Nessun utente attualmente loggato.");
+        return;
+      }
+      alert("Logout effettuato.");
+      localStorage.removeItem('token');
+      token = null;
+      updateHeaderUI();
+      loadProducts();
     }
 
     function loadProducts() {
@@ -66,23 +123,46 @@
         .then(data => {
           const container = document.getElementById('product-list');
           container.innerHTML = '';
+
           data.forEach(p => {
+            const hasDiscount = p.discount_percentage > 0;
+            const priceDisplay = hasDiscount
+            ? `<span style="text-decoration: line-through; color: grey;">${Number(p.price).toFixed(2)}€</span>
+               <span>${Number(p.final_price).toFixed(2)}€</span>
+               <span style="color: green;">(-${p.discount_percentage}%)</span>`
+            : `<span>${Number(p.final_price).toFixed(2)}€</span>`;
+
+            const stockLabel = p.stock === 0
+              ? `<span style="color: red;"> — Non disponibile</span>`
+              : '';
+
+            const disableAdd = p.stock === 0 ? 'disabled' : '';
+
             const div = document.createElement('div');
             div.className = 'product';
             div.innerHTML = `
-              <strong>${p.name}</strong><br>
-              Prezzo: ${p.final_price.toFixed(2)}€ <br>
-              <button onclick="addToCart(${p.id})">Aggiungi al carrello</button>
+              <strong>${p.name}</strong>${stockLabel}<br>
+              ${priceDisplay} <br>
+              <input type="number" id="qty-${p.id}" value="1" min="1" max="${p.stock}" ${disableAdd}>
+              <button onclick="addToCart(${p.id}, ${p.stock})" ${disableAdd}>Aggiungi al carrello</button>
             `;
             container.appendChild(div);
           });
         });
     }
 
-    function addToCart(productId) {
+    function addToCart(productId, stock) {
       if (!token) {
         alert("Effettua il login per aggiungere al carrello.");
         showLogin();
+        return;
+      }
+
+      const qtyInput = document.getElementById(`qty-${productId}`);
+      const quantity = parseInt(qtyInput.value);
+
+      if (quantity > stock) {
+        alert(`Disponibilità insufficiente: solo ${stock} pezzi in magazzino.`);
         return;
       }
 
@@ -92,16 +172,20 @@
           'Authorization': 'Token ' + token,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ product_id: productId, quantity: 1 })
+        body: JSON.stringify({ product_id: productId, quantity: quantity })
       })
       .then(res => {
         if (res.ok) {
           alert('Aggiunto al carrello!');
           viewCart();
+        } else {
+          res.json().then(data => {
+            alert(data.detail || 'Errore durante l\'aggiunta al carrello.');
+          });
         }
-        else alert('Errore durante l\'aggiunta al carrello.');
       });
     }
+
 
     function removeFromCart(cartItemId) {
       fetch(`${apiBase}/orders/cart/items/${cartItemId}/`, {
@@ -121,7 +205,6 @@
       });
     }
 
-
     function viewCart() {
       if (!token) {
         alert("Effettua il login per vedere il carrello.");
@@ -135,21 +218,26 @@
       .then(res => res.json())
       .then(cart => {
         const container = document.getElementById('cart-items');
+        const totalDiv = document.getElementById('cart-total');
         container.innerHTML = '';
+        let total = 0;
 
         cart.items.forEach(item => {
+          const itemTotal = Number(item.product.final_price) * item.quantity;
+          total += itemTotal;
+
           const div = document.createElement('div');
           div.innerHTML = `
-              ${item.product.name} - x${item.quantity}
-              <button onclick="removeFromCart(${item.id})">-</button>
+            ${item.product.name} - x${item.quantity}
+            <button onclick="removeFromCart(${item.id})">-</button>
           `;
           container.appendChild(div);
         });
 
+        totalDiv.innerHTML = `Totale: <span style="font-weight: normal;">${total.toFixed(2)}€</span>`;
         document.getElementById('cart-modal').classList.remove('hidden');
       });
     }
-
 
     function closeCart() {
       document.getElementById('cart-modal').classList.add('hidden');
@@ -169,7 +257,7 @@
         }
       });
     }
-
+    updateHeaderUI();
     loadProducts();
   </script>
 </body>
