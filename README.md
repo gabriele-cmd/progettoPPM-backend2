@@ -93,6 +93,11 @@ Le seguenti funzioni necessitano invece di un accesso minimo da Staff User (grup
 
 ---
 
+## 🛠️ Tecnologie Utilizzate
+
+- **Backend:** realizzato con **Django** e **Python**, per gestire logica applicativa, API REST, autenticazione e interazione con il database.
+- **Frontend:** sviluppato interamente in **HTML** con **JavaScript** integrato, per garantire un’interfaccia minimale, essenziale e facilmente estendibile senza framework esterni.
+
 ## ☁️ Database, Deploy e Avvio
 
 ### Database
@@ -109,7 +114,7 @@ Per la configurazione locale e di produzione, sono utilizzate variabili d’ambi
 Il backend Django è stato deployato su **Vercel**, che ospita l’app e la rende accessibile via web.
 
 - L’URL pubblico da visitare per la visualizzazione del sito è:  
-  `https://tuo-link-vercel.vercel.app/`
+  `https://progetto-ppm-backend2.vercel.app/`
   è possibile, tramite lo stesso link, visitare il backend aggiungendo /admin in fondo al link.
 
 - Le variabili d’ambiente configurate su Vercel puntano al database Supabase, garantendo sincronizzazione con il backend.
