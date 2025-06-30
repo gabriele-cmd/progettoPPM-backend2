@@ -9,8 +9,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # --- Sicurezza ---
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'fallback-unsafe-secret-key')
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '.railway.app').split(',')
+DEBUG = True
+ALLOWED_HOSTS = [
+    '.vercel.app',
+]
 
 # --- App ---
 INSTALLED_APPS = [
@@ -99,12 +101,5 @@ AUTH_USER_MODEL = 'users.CustomUser'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-# --- Sicurezza (opzionale) ---
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = 'DENY'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
