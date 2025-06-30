@@ -4,7 +4,6 @@ Backend REST API per un e-commerce di vinili, sviluppato con Django REST Framewo
 Progetto universitario per il corso di **Progettazione e Programmazione del Software (PPM)**.  
 Collegato a un frontend HTML/JavaScript minimale.
 
----
 
 ## 🚀 Funzionalità principali
 
@@ -17,7 +16,6 @@ Collegato a un frontend HTML/JavaScript minimale.
 - Database PostgreSQL (tramite Supabase)
 - Deploy serverless su **Vercel**
 
----
 
 ## 🧩 Tecnologie utilizzate
 
@@ -28,7 +26,6 @@ Collegato a un frontend HTML/JavaScript minimale.
 - Vercel (deploy backend)
 - GitHub Actions (versionamento e CI/CD)
 
----
 
 ## 👥 Tipi di utenti e permessi
 
@@ -39,19 +36,16 @@ Collegato a un frontend HTML/JavaScript minimale.
 | 📦 Product Manager     | - Tutti i permessi del cliente<br>- Crea/modifica/elimina prodotti | user, product_manager |
 | 👑 Superuser (Admin)   | - Accesso completo a tutto via Django Admin | n/a |
 
----
 
 ## 🛠 Moderatore 
 Si occupa della gestione dei Clienti e dei loro Ordini, offrendo assistenza qualora un ordine risulti non pagato o voglia venir modificato o cancellato (rimborsato).<br>
 Inoltre, può modificare le informazioni personali dei Clienti qualora ci fossero stati errori di inserimento o negargli l'accesso al sito in caso di abusi o violazioni attraverso l'opzione di Ban.
 
----
 
 ## 📦 Product Manager 
 Si occupa della gestione catalogo del negozio. Gestisce i prodotti modificandone le informazioni, la disponibilità o gli sconti, oppure aggiungendone di nuovi o rimuovendone qualora il negozio ne cessi la vendita.<br>
 Inoltre, può visualizzare i prodotti comprati accedendo alla lista degli OrderItems (read-only), per valutare così quale prodotto è più richiesto e quale meno in modo da organizzare i rifornimenti del magazzino.
 
----
 
 ## 🔐 Credenziali di test
 
@@ -63,7 +57,6 @@ Inoltre, può visualizzare i prodotti comprati accedendo alla lista degli OrderI
 | Product Manager    | `Manager`    | `testpassword4`  |
 | Superuser (admin)  | `Gab`      | `superpassword` |
 
----
 
 ## 🌐 Endpoint principali
 
@@ -91,7 +84,6 @@ Le seguenti funzioni necessitano invece di un accesso minimo da Staff User (grup
 | Gestione permessi e gruppi           | Super User                          |
 | altro (...)                          | Super User                          |
 
----
 
 ## 🛠️ Tecnologie Utilizzate
 
