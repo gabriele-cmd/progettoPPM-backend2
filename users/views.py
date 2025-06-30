@@ -59,8 +59,6 @@ class CurrentUserView(APIView):
             'email': user.email
         })
 
-User = get_user_model()
-
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -73,10 +71,10 @@ class RegisterView(APIView):
         if not username or not email or not password1 or not password2:
             return Response({"error": "Tutti i campi sono obbligatori."}, status=400)
 
-        if User.objects.filter(username=username).exists():
+        if CustomUser.objects.filter(username=username).exists():
             return Response({"error": "Username già in uso."}, status=400)
 
-        if User.objects.filter(email=email).exists():
+        if CustomUser.objects.filter(email=email).exists():
             return Response({"error": "Email già registrata, effettua l'accesso."}, status=400)
 
         try:
@@ -90,5 +88,5 @@ class RegisterView(APIView):
         if len(password1) < 8 or not re.search(r"\d", password1):
             return Response({"error": "La password deve essere lunga almeno 8 caratteri e contenere almeno un numero."}, status=400)
 
-        user = User.objects.create_user(username=username, email=email, password=password1)
+        user = CustomUser.objects.create_user(username=username, email=email, password=password1)
         return Response({"success": "Registrazione avvenuta con successo."}, status=201)
