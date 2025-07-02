@@ -159,6 +159,9 @@
       alert("Logout effettuato.");
       localStorage.removeItem('token');
       token = null;
+      document.getElementById('cart-modal').classList.add('hidden');
+      document.getElementById('login-modal').classList.add('hidden');
+      document.getElementById('register-modal').classList.add('hidden');
       updateHeaderUI();
       loadProducts();
     }
