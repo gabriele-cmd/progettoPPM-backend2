@@ -144,7 +144,6 @@
           alert("Registrazione avvenuta con successo. Ora effettua il login.");
           document.getElementById('register-modal').classList.add('hidden');
         } else {
-          // Estrae il messaggio specifico dal backend
           const errorMsg = data.error || data.detail || JSON.stringify(data);
           alert(errorMsg);
         }
