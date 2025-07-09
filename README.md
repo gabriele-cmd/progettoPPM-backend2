@@ -113,3 +113,7 @@ Il backend Django è stato deployato su **Vercel**, che ospita l’app e la rend
 
 Il deploy su Vercel è stato configurato per aggiornarsi automaticamente ad ogni push sul branch principale, assicurando che l’app sia sempre aggiornata con l’ultima versione del codice.
 
+
+### NOTA
+
+Il supporto fornito da Vercel e Supabase potrebbe rendere il sito occasionalmente lento nel caricare le richieste. Il sito funziona ma si abbia cura di aspettare la risposta del server ed evitare dove possibile di inviare molteplici richieste tutte insieme.
