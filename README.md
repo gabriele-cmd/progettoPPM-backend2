@@ -49,40 +49,103 @@ Inoltre, può visualizzare i prodotti comprati accedendo alla lista degli OrderI
 
 ## 🔐 Credenziali di test
 
-| Ruolo              | Username     | Password       |
-|--------------------|--------------|----------------|
-| Cliente 1     | `LocalBuyer`   | `testpassword1`  |
-| Cliente 2    | `ForeignBuyer`   | `testpassword2`  |
-| Moderatore         | `Moderator`  | `testpassword3`  |
-| Product Manager    | `Manager`    | `testpassword4`  |
-| Superuser (admin)  | `Gab`      | `superpassword` |
+| Ruolo              | Username     | Password       | Token |
+|--------------------|--------------|----------------|------|
+| Cliente 1     | `LocalBuyer`   | `testpassword1`  | 0dad42abec6d8bf3658d450107f8bda59e99e08e |
+| Cliente 2    | `ForeignBuyer`   | `testpassword2`  | f977df01f22f54fb76e122b8ac99143c11ce7c96 |
+| Moderatore         | `Moderator`  | `testpassword3`  | d9774a67f7611b7ca7713285badf8e676c8fd976 |
+| Product Manager    | `Manager`    | `testpassword4`  | 7ed6652024cbe4bc931697fbaee5457f0e62cb72 |
+| Superuser (admin)  | `Gab`      | `superpassword` | 392789baec81fd2583650e1fe7a3a4ea4cacb8a4 |
 
 
-## 🌐 Endpoint principali
+## 📚 Elenco Endpoint Principali
 
-| Metodo | Endpoint                             | Descrizione                          |
-|--------|--------------------------------------|--------------------------------------|
-| POST   | `/api/users/register/`               | Registrazione                        |
-| POST   | `/api/users/login/`                  | Login (ritorna token)                |
-| GET    | `/api/products/`                     | Lista prodotti                       |
-| POST   | `/api/orders/cart/items/`            | Aggiunge prodotto al carrello        |
-| GET    | `/api/orders/cart/`                  | Visualizza carrello attivo           |
-| POST   | `/api/orders/checkout/`              | Esegue checkout                      |
+| Metodo | Endpoint                                 | Descrizione                                 | Autenticazione |
+|--------|------------------------------------------|---------------------------------------------|----------------|
+| POST   | `/api/users/register/`                   | Registra un nuovo utente                    | ❌ No          |
+| POST   | `/api/users/login/`                      | Login e ottiene token                       | ❌ No          |
+| GET    | `/api/users/me/`                         | Info sull’utente loggato                    | ✅ Sì          |
+| GET    | `/api/products/`                         | Elenco prodotti disponibili                 | ✅ Sì          |
+| POST   | `/api/orders/cart/items/`                | Aggiunge prodotto al carrello               | ✅ Sì          |
+| PATCH  | `/api/orders/cart/items/<item_id>/`      | Modifica quantità di un prodotto nel carrello | ✅ Sì        |
+| DELETE | `/api/orders/cart/items/<item_id>/`      | Rimuove un prodotto dal carrello            | ✅ Sì          |
+| GET    | `/api/orders/cart/`                      | Visualizza carrello attivo                  | ✅ Sì          |
+| POST   | `/api/orders/checkout/`                  | Conclude l’ordine (checkout)                | ✅ Sì          |
+| GET    | `/api/orders/orders/`                    | Storico ordini dell’utente loggato          | ✅ Sì          |
 
-⚠️ Tutti gli endpoint `/orders/` e `/products/` richiedono autenticazione tramite token.
 
-Le funzioni sopra indicate possono essere testate da frontend (e quindi accessibili agli Utenti normali.
+Le funzioni sopra indicate possono essere testate da frontend (e quindi accessibili agli Utenti normali).
 
 Le seguenti funzioni necessitano invece di un accesso minimo da Staff User (gruppo moderator o manager, o superuser):
 
-| Azione                               | Gruppo                              |
-|--------------------------------------|-------------------------------------|
-| Aggiunta/rimozione/modifica Utente   | Super User / moderator (in parte)   |
-| Aggiunta/rimozione/modifica Prodotto | Staff User / product_manager        |
-| Aggiunta/rimozione/modifica Ordine   | Super User / moderator              |
-| Ban/unBan Utente                     | Super User / moderator              |
-| Gestione permessi e gruppi           | Super User                          |
-| altro (...)                          | Super User                          |
+| Metodo | Endpoint                                 | Descrizione                                         | Accesso richiesto       |
+|--------|------------------------------------------|-----------------------------------------------------|--------------------------|
+| POST   | `/api/users/ban/<user_id>/`              | Banna un utente                                     | Superuser / Moderator    |
+| GET    | `/admin/`                                | Admin panel completo Django                         | Superuser                |
+| POST   | `/api/products/`                         | Crea un nuovo prodotto                              | Product Manager / Staff  |
+| PUT    | `/api/products/<product_id>/`            | Aggiorna un prodotto esistente                      | Product Manager / Staff  |
+| DELETE | `/api/products/<product_id>/`            | Rimuove un prodotto                                 | Product Manager / Staff  |
+| GET    | `/api/orders/orders/`                    | Visualizza tutti gli ordini (solo per staff)        | Moderator / Superuser    |
+| PUT    | `/api/orders/orders/<order_id>/`         | Modifica stato di un ordine                         | Moderator / Superuser    |
+| DELETE | `/api/orders/orders/<order_id>/`         | Elimina un ordine                                   | Superuser                |
+| PATCH  | `/api/users/<user_id>/`                  | Modifica informazioni utente                        | Moderator / Superuser    |
+| GET/POST | `/admin/auth/group/` e relazioni       | Gestione permessi, gruppi e ruoli                   | Superuser                |
+
+### 📤 Payload JSON per endpoint
+
+Di seguito sono riportati esempi di payload da utilizzare per testare alcuni degli endpoint sopra citati.
+
+#### 🆕 `POST /api/products/` — Crea un nuovo prodotto
+
+```json
+{
+  "name": "The Dark Side of the Moon - Pink Floyd",
+  "description": "50th Anniversary Edition, rimasterizzato.",
+  "price": 35.00,
+  "stock": 10,
+  "discount_percentage": 15
+}
+```
+
+---
+
+#### ✏️ `PUT /api/products/<product_id>/` — Modifica un prodotto esistente
+
+```json
+{
+  "name": "Because The Internet - Childish Gambino",
+  "description": "Corretto typo in 'Childish'.",
+  "price": 24.00,
+  "stock": 5,
+  "discount_percentage": 5
+}
+```
+
+---
+
+#### ✅ `PUT /api/orders/orders/<order_id>/` — Modifica stato di un ordine
+
+```json
+{
+  "is_paid": true
+}
+```
+
+> Esempio: puoi usare `order_id = 3` per testare con un ordine non pagato di `LocalBuyer`.
+
+---
+
+#### 👤 `PATCH /api/users/<user_id>/` — Modifica dati di un utente
+
+```json
+{
+  "first_name": "Mario",
+  "last_name": "Rossi",
+  "email": "mario.rossi@example.com"
+}
+```
+
+> Esempio: `user_id = 2` corrisponde a `LocalBuyer`.
 
 
 ## 🛠️ Tecnologie Utilizzate
